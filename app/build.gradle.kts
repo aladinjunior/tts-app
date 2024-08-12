@@ -22,6 +22,11 @@ android {
     }
 
     buildTypes {
+
+        debug {
+            buildConfigField("String", "BASE_URL", "\"https://api.v7.unrealspeech.com\"")
+        }
+
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -39,12 +44,12 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeCompiler {
         enableStrongSkippingMode = true
 
         reportsDestination = layout.buildDirectory.dir("compose_compiler")
-        stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
     }
     packaging {
         resources {
@@ -65,6 +70,9 @@ dependencies {
     implementation(libs.androidx.material3)
 
 
+    implementation(libs.squareup.retrofit)
+    implementation(libs.squareup.okhttp)
+    implementation(libs.gson.converter)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
