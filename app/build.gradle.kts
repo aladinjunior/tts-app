@@ -1,8 +1,16 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.compose.compiler)
 }
+
+val localProperties = Properties().apply {
+    load(rootProject.file("local.properties").inputStream())
+}
+val apiKey: String = localProperties.getProperty("apiKey")
+
 
 android {
     namespace = "com.aladinjunior.ttsapp"
@@ -25,6 +33,7 @@ android {
 
         debug {
             buildConfigField("String", "BASE_URL", "\"https://api.v7.unrealspeech.com\"")
+            buildConfigField("String", "API_KEY", "\"$apiKey\"")
         }
 
         release {
@@ -68,6 +77,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
 
 
     implementation(libs.squareup.retrofit)
