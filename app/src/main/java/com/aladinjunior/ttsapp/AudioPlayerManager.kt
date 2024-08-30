@@ -40,8 +40,13 @@ object AudioPlayerManager {
         }
     }
 
-     fun playMedia()  {
+    fun playMedia(
+        onCompleted: () -> Unit,
+    ) {
         mediaPlayer?.start()
+        mediaPlayer?.setOnCompletionListener {
+            onCompleted()
+        }
     }
 
 

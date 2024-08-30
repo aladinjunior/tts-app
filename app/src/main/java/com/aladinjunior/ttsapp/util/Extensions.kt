@@ -1,4 +1,4 @@
-package com.aladinjunior.ttsapp
+package com.aladinjunior.ttsapp.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable

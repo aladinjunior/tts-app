@@ -6,7 +6,7 @@ data class SpeechResponse(
     @SerializedName("CreationTime")
     val creationTime: String,
     @SerializedName("OutputUri")
-    val speechUri: String,
+    val speechUrl: String,
     @SerializedName("RequestCharacters")
     val requestCharacters: Int,
     @SerializedName("TaskId")

@@ -1,9 +1,9 @@
 package com.aladinjunior.ttsapp
 
 import AudioPlayerManager
-import android.media.MediaPlayer
-import android.net.Uri
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Button
@@ -11,21 +11,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.aladinjunior.ttsapp.playerspeech.AnimatedVolumeLevelBar
 import com.aladinjunior.ttsapp.playerspeech.PlayerState
 import com.aladinjunior.ttsapp.ui.theme.TTSAppTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.launch
+import com.aladinjunior.ttsapp.domain.model.SpeechRequest
+import com.aladinjunior.ttsapp.util.TimestampType
 
 @Composable
 fun App(
@@ -35,17 +35,16 @@ fun App(
 
 
     var text by remember { mutableStateOf("") }
-    var label by remember { mutableStateOf("Insert a text to generate a speech") }
     var playerState by remember { mutableStateOf(PlayerState.Idle) }
-    val coroutineScope = rememberCoroutineScope()
+    var timestampType: String
+    val speechUrl by viewModel.speechUrlFlow.collectAsState()
 
 
-    val mediaPlayer = remember { MediaPlayer() }
-
-    val context = LocalContext.current
 
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
 
         TextField(
@@ -54,7 +53,7 @@ fun App(
                 text = it
             },
             label = {
-                Text(text = label)
+                Text(text = "Insert a text to generate a speech")
             }
         )
 
@@ -71,10 +70,16 @@ fun App(
             onClick = {
 
                 if (text.isNotEmpty()) {
+                    //sets the playerState as "playing"
+                    //and calls the function that gets the mp3 speech
                     playerState = PlayerState.Playing
-//                    AudioPlayerManager.prepareMedia("https://unreal-expire-in-90-days.s3-us-west-2.amazonaws.com/7edf5a8b-aacb-47e6-b534-4963896710d9-0.mp3") {
-//                        AudioPlayerManager.playMedia()
-//                    }
+                    timestampType = isWordOrSentence(text)
+                    viewModel.generateSpeech(
+                        SpeechRequest(
+                            text = text,
+                            timestampType = timestampType
+                        )
+                    )
                 }
 
 
@@ -83,15 +88,15 @@ fun App(
             Text(text = "Generate Speech")
         }
 
-//        if (playerState == PlayerState.Playing) {
-//            MediaPlayer.create(context, Uri.parse("https://unreal-expire-in-90-days.s3-us-west-2.amazonaws.com/7edf5a8b-aacb-47e6-b534-4963896710d9-0.mp3")).start()
-//
-//        }
+
 
         LaunchedEffect(key1 = playerState) {
             if (playerState == PlayerState.Playing) {
-                AudioPlayerManager.prepareMedia("https://unreal-expire-in-90-days.s3-us-west-2.amazonaws.com/7edf5a8b-aacb-47e6-b534-4963896710d9-0.mp3") {
-                    AudioPlayerManager.playMedia()
+                AudioPlayerManager.prepareMedia(speechUrl) {
+                    AudioPlayerManager.playMedia {
+                        //sets the animated volume level bar as idle when audio finishes
+                        playerState = PlayerState.Idle
+                    }
                 }
             }
 
@@ -101,6 +106,16 @@ fun App(
 
     }
 
+}
+
+private fun isWordOrSentence(
+    text: String,
+): String {
+    return if (text.trim().contains(" ")) {
+        TimestampType.SENTENCE
+    } else {
+        TimestampType.WORD
+    }
 }
 
 @Preview
